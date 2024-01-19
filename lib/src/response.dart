@@ -1,9 +1,9 @@
 import 'package:riverpod/riverpod.dart';
 
-import 'api_data.dart';
+import 'data_response.dart';
 import 'api_error.dart';
 import 'api_failure.dart';
-import 'api_loading.dart';
+import 'loading_response.dart';
 import 'error_response.dart';
 import 'failure_response.dart';
 
@@ -13,9 +13,9 @@ class NoContent {}
 abstract class Response<T> {
   const Response.internal();
 
-  const factory Response.data(T value) = ApiData<T>;
+  const factory Response.data(T value) = DataResponse<T>;
 
-  const factory Response.loading() = ApiLoading<T>;
+  const factory Response.loading() = LoadingResponse<T>;
 
   const factory Response.error(ApiError error) = ErrorResponse<T>;
 

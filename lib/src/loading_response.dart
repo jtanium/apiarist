@@ -2,15 +2,8 @@ import 'api_error.dart';
 import 'api_failure.dart';
 import 'response.dart';
 
-class ApiLoading<T> extends Response<T> {
-  const ApiLoading._({
-    required this.hasValue,
-    required this.value,
-    required this.error,
-    required this.failure,
-  }) : super.internal();
-
-  const ApiLoading()
+class LoadingResponse<T> extends Response<T> {
+  const LoadingResponse()
       : hasValue = false,
         value = null,
         error = null,

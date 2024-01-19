@@ -2,15 +2,15 @@ import 'api_error.dart';
 import 'api_failure.dart';
 import 'response.dart';
 
-class ApiData<T> extends Response<T> {
-  const ApiData._(
+class DataResponse<T> extends Response<T> {
+  const DataResponse._(
       this.value, {
         required this.isLoading,
         required this.error,
         required this.failure,
       }) : super.internal();
 
-  const ApiData(T value)
+  const DataResponse(T value)
       : this._(
     value,
     isLoading: false,
