@@ -1,25 +1,25 @@
 import 'package:riverpod/riverpod.dart';
 
-import 'data_response.dart';
+import 'api_data_response.dart';
 import 'api_error.dart';
 import 'api_failure.dart';
 import 'loading_response.dart';
-import 'error_response.dart';
-import 'failure_response.dart';
+import 'api_error_response.dart';
+import 'api_failure_response.dart';
 
 /// This class simply avoids bugs related to ApiResponse<void>, since ApiResponse#when has to return a non-nullable value
 class NoContent {}
 
-abstract class Response<T> {
-  const Response.internal();
+abstract class ApiResponse<T> {
+  const ApiResponse.internal();
 
-  const factory Response.data(T value) = DataResponse<T>;
+  const factory ApiResponse.data(T value) = ApiDataResponse<T>;
 
-  const factory Response.loading() = LoadingResponse<T>;
+  const factory ApiResponse.loading() = LoadingResponse<T>;
 
-  const factory Response.error(ApiError error) = ErrorResponse<T>;
+  const factory ApiResponse.error(ApiError error) = ApiErrorResponse<T>;
 
-  const factory Response.failure(ApiFailure failure) = FailureResponse<T>;
+  const factory ApiResponse.failure(ApiFailure failure) = ApiFailureResponse<T>;
 
   bool get isLoading;
 
@@ -181,29 +181,29 @@ abstract class Response<T> {
     return data(value as T);
   }
 
-  factory Response.composite(List<dynamic> watched, T Function(List<dynamic>) dataReady) {
+  factory ApiResponse.composite(List<dynamic> watched, T Function(List<dynamic>) dataReady) {
     if (watched.any((e) => e.isLoading)) {
-      return const Response.loading();
+      return const ApiResponse.loading();
     }
     dynamic error = watched.firstWhere(_hasError, orElse: () => null);
     if (error != null) {
-      return Response.error(error.error!);
+      return ApiResponse.error(error.error!);
     }
-    Response<dynamic>? failure = watched.firstWhere(_hasFailure, orElse: () => null);
+    ApiResponse<dynamic>? failure = watched.firstWhere(_hasFailure, orElse: () => null);
     if (failure != null) {
-      return Response.failure(failure.failure!);
+      return ApiResponse.failure(failure.failure!);
     }
-    return Response.data(dataReady(List.from(watched.map((e) => e.value!))));
+    return ApiResponse.data(dataReady(List.from(watched.map((e) => e.value!))));
   }
 
   static bool _hasError(element) {
     if (element is AsyncValue) return element.error != null;
-    if (element is Response) return element.hasError;
+    if (element is ApiResponse) return element.hasError;
     return false;
   }
 
   static bool _hasFailure(element) {
-    if (element is Response) return element.hasFailure;
+    if (element is ApiResponse) return element.hasFailure;
     return false;
   }
 }

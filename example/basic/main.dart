@@ -1,14 +1,14 @@
 import 'dart:convert';
 
-import 'package:apiarist/api.dart' as api;
+import 'package:apiarist/apiarist.dart';
 
 import 'model.dart';
 
 
 Future<void> main() async {
-  api.Endpoint endpoint = api.Endpoint(baseUrl: "https://uselessfacts.jsph.pl/api/v2");
+  ApiEndpoint endpoint = ApiEndpoint(baseUrl: "https://uselessfacts.jsph.pl/api/v2");
 
-  api.Response<UselessFact> randomFactResponse = await endpoint.call(api.HttpMethod.get, "/facts/random",
+  ApiResponse<UselessFact> randomFactResponse = await endpoint.call(HttpMethod.get, "/facts/random",
       onSuccess: (responseBody) => UselessFact.fromJson(jsonDecode(responseBody)));
   randomFactResponse.when(
     // this won't happen in this example because we are calling await
@@ -20,7 +20,7 @@ Future<void> main() async {
     failure: (apiFailure) => print("[api-failure] ${apiFailure.error}"),
   );
 
-  api.Response<UselessFact> notFoundResponse = await endpoint.call(api.HttpMethod.get, "/paththatdoesnotexist",
+  ApiResponse<UselessFact> notFoundResponse = await endpoint.call(HttpMethod.get, "/paththatdoesnotexist",
       onSuccess: (responseBody) => UselessFact.fromJson(jsonDecode(responseBody)));
   notFoundResponse.when(
     // this won't happen in this example because we are calling await

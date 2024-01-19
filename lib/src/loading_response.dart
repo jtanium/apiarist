@@ -1,8 +1,8 @@
 import 'api_error.dart';
 import 'api_failure.dart';
-import 'response.dart';
+import 'api_response.dart';
 
-class LoadingResponse<T> extends Response<T> {
+class LoadingResponse<T> extends ApiResponse<T> {
   const LoadingResponse()
       : hasValue = false,
         value = null,

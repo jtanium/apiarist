@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 import 'api_error.dart';
 import 'api_failure.dart';
-import 'response.dart';
+import 'api_response.dart';
 
 enum HttpMethod {
   get,
@@ -14,19 +14,19 @@ enum HttpMethod {
   delete,
 }
 
-class Endpoint {
+class ApiEndpoint {
   late final String scheme;
   late final String host;
   late final String basePath;
 
-  Endpoint({required String baseUrl}) {
+  ApiEndpoint({required String baseUrl}) {
     Uri uri = Uri.parse(baseUrl);
     scheme = uri.scheme;
     host = uri.authority;
     basePath = uri.path;
   }
 
-  Future<Response<T>> call<T>(
+  Future<ApiResponse<T>> call<T>(
     HttpMethod method,
     String path, {
     Map<String, String>? headers,
@@ -38,16 +38,16 @@ class Endpoint {
     try {
       uri = _buildUri(path, queryParams);
     } catch (e, stackTrace) {
-      return Response.failure(ApiFailure(e, stackTrace));
+      return ApiResponse.failure(ApiFailure(e, stackTrace));
     }
     try {
       http.Response response = await _execute(method, uri, headers, body);
       if (response.statusCode >= 200 && response.statusCode < 400) {
-        return Response.data(_invokeOnSuccess(onSuccess, response));
+        return ApiResponse.data(_invokeOnSuccess(onSuccess, response));
       }
-      return Response.error(ApiError(response, uri: uri));
+      return ApiResponse.error(ApiError(response, uri: uri));
     } on Exception catch (failure, stackTrace) {
-      return Response.failure(ApiFailure(failure, stackTrace, uri));
+      return ApiResponse.failure(ApiFailure(failure, stackTrace, uri));
     }
   }
 

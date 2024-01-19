@@ -7,6 +7,8 @@ class ApiError {
   final Map<String, dynamic> metadata;
   final Uri uri;
 
+  int get statusCode => response.statusCode;
+
   ApiError(this.response, {required this.uri, this.metadata = const {}});
 
   String? get responseContentType => response.headers["Content-Type"];

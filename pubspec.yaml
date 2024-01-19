@@ -1,15 +1,15 @@
 name: apiarist
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
+description: Library for handling api responses in a more nuanced way
+version: 1.0.3
 repository: https://github.com/jtanium/apiarist
 
 environment:
-  sdk: ^3.0.7
+  sdk: ^3.0.0
 
 # Add regular dependencies here.
 dependencies:
   # path: ^1.8.0
-  http: ^1.1.2
+  http: ^1.0.0
   riverpod: ^2.4.9
 
 dev_dependencies:

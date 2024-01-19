@@ -1,13 +1,13 @@
-import 'package:apiarist/api.dart';
+import 'package:apiarist/apiarist.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'model.dart';
 import 'response_providers.dart';
 
-class RandomNumberAndUselessFactsNotifier extends Notifier<Response<CompositeModel>> {
+class RandomNumberAndUselessFactsNotifier extends Notifier<ApiResponse<CompositeModel>> {
   @override
-  Response<CompositeModel> build() {
-    return Response.composite(
+  ApiResponse<CompositeModel> build() {
+    return ApiResponse.composite(
       [
         ref.watch(numberFactResponseProvider),
         ref.watch(uselessFactResponseProvider),
@@ -28,5 +28,5 @@ class RandomNumberAndUselessFactsNotifier extends Notifier<Response<CompositeMod
 }
 
 final numberAndUselessFactsProvider =
-NotifierProvider<RandomNumberAndUselessFactsNotifier, Response<CompositeModel>>(
+NotifierProvider<RandomNumberAndUselessFactsNotifier, ApiResponse<CompositeModel>>(
     RandomNumberAndUselessFactsNotifier.new);

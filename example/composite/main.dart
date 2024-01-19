@@ -1,4 +1,4 @@
-import 'package:apiarist/api.dart' as api;
+import 'package:apiarist/apiarist.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'model.dart';
@@ -10,7 +10,7 @@ Future<void> main() async {
 
   // In a Flutter app, we would use ref.watch(), but since we don't have a Ref object we will use container.listen()
   // We are giving it a handler function to update the apiResponse variable once it gets a value
-  api.Response<CompositeModel> apiResponse;
+  ApiResponse<CompositeModel> apiResponse;
   apiResponse = container.listen(numberAndUselessFactsProvider, (previous, value) {
     print("apiResponse has changed");
     apiResponse = value;

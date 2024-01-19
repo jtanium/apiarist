@@ -1,12 +1,12 @@
 import 'api_error.dart';
 import 'api_failure.dart';
-import 'response.dart';
+import 'api_response.dart';
 
 /*
  * This indicates we failed to get a response from the Api (server), or an exception occurred while trying to handle it
  */
-class FailureResponse<T> extends Response<T> {
-  const FailureResponse._({
+class ApiFailureResponse<T> extends ApiResponse<T> {
+  const ApiFailureResponse._({
     required this.error,
     required this.isLoading,
     required this.hasValue,
@@ -14,7 +14,7 @@ class FailureResponse<T> extends Response<T> {
     required this.failure,
   }) : super.internal();
 
-  const FailureResponse(ApiFailure failure)
+  const ApiFailureResponse(ApiFailure failure)
       : this._(
     error: null,
     isLoading: false,

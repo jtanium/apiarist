@@ -10,30 +10,40 @@ For general information about developing packages, see the Dart guide for
 and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages). 
 -->
+# Apiarist
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+`AsyncValue` but for REST APIs.
 
-## Features
+Dart/Flutter library for interacting with an API, particularly a REST API.
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+The impetus for this was Riverpod's `AsyncValue`. The idea was great. And it is
+great for the usual things like reading from device storage. But using `AsyncValue`
+for API calls breaks down because it can only handle loading, data, and exceptions.
+If you get an HTTP 400 Bad Request or HTTP 401 Unauthorized, you have to shoehorn
+the error response into either "data" or "error", neither of which are ideal.
 
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Apiarist introduces the concept of an API response object (`api.Response`) to handle
+those situations better.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
 ```dart
-const like = 'sample';
+Widget build(BuildContext context) {
+  api.Response<MyModel> apiResponse = ref.watch(myModelProvider);
+  return apiResponse.when(
+    loading: () => CircularLoadingIndicator(),
+    data: (myModel) => Text(myModel.FullName),
+    error: (apiError) {
+      logger.warning("API ");
+      return Text("${apiError.statusCode} - ${apiError.parsedBody()['errorDesc']}");
+    },
+    unauthorized: (apiError) => context.go("/login"),
+    notFound: (apiError) => Text("Sorry, we couldn't find that one"),
+    failure: (apiFailure) {
+      logger.warning("API Failure: ${apiFailure.error}\n${apiFailure.stackTrace}");
+      return Text("Request failed");
+    },
+  );
+}
 ```
 
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.

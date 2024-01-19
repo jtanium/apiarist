@@ -1,9 +1,9 @@
 import 'api_error.dart';
 import 'api_failure.dart';
-import 'response.dart';
+import 'api_response.dart';
 
-class ErrorResponse<T> extends Response<T> {
-  const ErrorResponse._({
+class ApiErrorResponse<T> extends ApiResponse<T> {
+  const ApiErrorResponse._({
     required this.error,
     required this.isLoading,
     required this.hasValue,
@@ -11,7 +11,7 @@ class ErrorResponse<T> extends Response<T> {
     required this.failure,
   }) : super.internal();
 
-  const ErrorResponse(ApiError error)
+  const ApiErrorResponse(ApiError error)
       : this._(
     error: error,
     isLoading: false,
