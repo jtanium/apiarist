@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Added ApiResponse#convertData
+
 ## 1.0.3
 
 - Renamed to class names

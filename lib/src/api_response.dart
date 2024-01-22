@@ -196,6 +196,15 @@ abstract class ApiResponse<T> {
     return ApiResponse.data(dataReady(List.from(watched.map((e) => e.value!))));
   }
 
+  ApiResponse<R> convertData<R>(R Function(T data) convertFn) {
+    return when(
+      data: (data) => ApiResponse.data(convertFn(data)),
+      loading: () => ApiResponse.loading(),
+      error: (error) => ApiResponse.error(error),
+      failure: (failure) => ApiResponse.failure(failure),
+    );
+  }
+
   static bool _hasError(element) {
     if (element is AsyncValue) return element.error != null;
     if (element is ApiResponse) return element.hasError;

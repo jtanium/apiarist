@@ -22,14 +22,20 @@ for API calls breaks down because it can only handle loading, data, and exceptio
 If you get an HTTP 400 Bad Request or HTTP 401 Unauthorized, you have to shoehorn
 the error response into either "data" or "error", neither of which are ideal.
 
-Apiarist introduces the concept of an API response object (`api.Response`) to handle
+Apiarist introduces the concept of an API response object (`ApiResponse`) to handle
 those situations better.
+
+## Getting Started
+Install the usual way
+```shell
+flutter pub get apiarist
+```
 
 ## Usage
 
 ```dart
 Widget build(BuildContext context) {
-  api.Response<MyModel> apiResponse = ref.watch(myModelProvider);
+  ApiResponse<MyModel> apiResponse = ref.watch(myModelProvider);
   return apiResponse.when(
     loading: () => CircularLoadingIndicator(),
     data: (myModel) => Text(myModel.FullName),
