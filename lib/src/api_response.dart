@@ -2,10 +2,10 @@ import 'package:riverpod/riverpod.dart';
 
 import 'api_data_response.dart';
 import 'api_error.dart';
-import 'api_failure.dart';
-import 'loading_response.dart';
 import 'api_error_response.dart';
+import 'api_failure.dart';
 import 'api_failure_response.dart';
+import 'loading_response.dart';
 
 /// This class simply avoids bugs related to ApiResponse<void>, since ApiResponse#when has to return a non-nullable value
 class NoContent {}
@@ -182,17 +182,21 @@ abstract class ApiResponse<T> {
   }
 
   factory ApiResponse.composite(List<dynamic> watched, T Function(List<dynamic>) dataReady) {
-    if (watched.any((e) => e.isLoading)) {
-      return const ApiResponse.loading();
-    }
-    dynamic error = watched.firstWhere(_hasError, orElse: () => null);
+    // If there are any errors, return the first one
+    dynamic error = watched.where(_hasError).firstOrNull;
     if (error != null) {
       return ApiResponse.error(error.error!);
     }
-    ApiResponse<dynamic>? failure = watched.firstWhere(_hasFailure, orElse: () => null);
+    // If there are any failures, return the first one
+    ApiResponse<dynamic>? failure = watched.where(_hasFailure).firstOrNull;
     if (failure != null) {
       return ApiResponse.failure(failure.failure!);
     }
+    // If there aren't any errors or failures, check if any are still loading
+    if (watched.any((e) => e.isLoading)) {
+      return const ApiResponse.loading();
+    }
+    // All responses must have data, so we can safely convert them to a list
     return ApiResponse.data(dataReady(List.from(watched.map((e) => e.value!))));
   }
 
