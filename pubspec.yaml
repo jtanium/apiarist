@@ -1,6 +1,6 @@
 name: apiarist
 description: Library for handling api responses in a more nuanced way
-version: 1.0.4
+version: 1.0.5
 repository: https://github.com/jtanium/apiarist
 
 environment:
