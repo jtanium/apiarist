@@ -1,3 +1,6 @@
+## 1.0.5
+- Changed `ApiResponse.composite` to prioritize errors and failures over loading
+
 ## 1.0.4
 
 - Added ApiResponse#convertData
