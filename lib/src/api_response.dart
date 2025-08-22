@@ -185,7 +185,15 @@ abstract class ApiResponse<T> {
     // If there are any errors, return the first one
     dynamic error = watched.where(_hasError).firstOrNull;
     if (error != null) {
-      return ApiResponse.error(error.error!);
+      if (error is ApiError) {
+        return ApiResponse.error(error);
+      }
+      if (error is ApiErrorResponse) {
+        return ApiResponse.error(error.error);
+      }
+      error = (error as AsyncValue).error;
+      return ApiResponse.failure(
+          ApiFailure(error, error is Error ? error.stackTrace ?? StackTrace.current : StackTrace.current));
     }
     // If there are any failures, return the first one
     ApiResponse<dynamic>? failure = watched.where(_hasFailure).firstOrNull;

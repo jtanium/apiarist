@@ -2,6 +2,7 @@ import 'package:apiarist/src/api_error.dart';
 import 'package:apiarist/src/api_failure.dart';
 import 'package:apiarist/src/api_response.dart';
 import 'package:http/http.dart' as http;
+import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -235,6 +236,22 @@ void main() {
       expect(result.hasError, isFalse);
       expect(result.hasFailure, isTrue);
       expect(result.failure, equals(failure1));
+    });
+
+    test('gracefully converts AsyncValue.error to ApiResponse.failure', () {
+      final responses = [
+        const ApiResponse<String>.data('test'),
+        AsyncValue<int>.error(Exception("Async error"), StackTrace.current),
+      ];
+
+      final result = ApiResponse.composite(responses, (data) => data.toString());
+
+      expect(result.isLoading, isFalse);
+      expect(result.hasValue, isFalse);
+      expect(result.hasError, isFalse);
+      expect(result.hasFailure, isTrue);
+      expect(result.failure, isA<ApiFailure>());
+      expect(result.failure!.error.toString(), Exception("Async error").toString());
     });
   });
 }
