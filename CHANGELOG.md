@@ -1,3 +1,6 @@
+## 1.0.6
+- ApiResponse.composite handles AsyncValue.error values gracefully
+
 ## 1.0.5
 - Changed `ApiResponse.composite` to prioritize errors and failures over loading
 
