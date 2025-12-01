@@ -1,3 +1,8 @@
+## 1.0.7
+- Added `ApiResponse.chain()` method for sequential API calls
+- Added `FutureApiResponseExtension` to enable fluent chaining syntax
+- Updated documentation to clarify parallel vs sequential API call patterns
+
 ## 1.0.6
 - ApiResponse.composite handles AsyncValue.error values gracefully
 

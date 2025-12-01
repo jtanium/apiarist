@@ -20,7 +20,8 @@ A Dart package for handling API responses in a structured and type-safe way. Api
 - **Comprehensive state management** - Support for loading, data, error, and failure states
 - **HTTP status code handling** - Built-in support for all standard HTTP status codes
 - **Riverpod integration** - Seamless integration with Riverpod for state management
-- **Composite responses** - Combine multiple API responses with intelligent error handling
+- **Composite responses** - Combine multiple parallel API responses with intelligent error handling
+- **Sequential chaining** - Chain dependent API calls with automatic error propagation
 - **Graceful error handling** - Distinguish between API errors and application failures
 
 ## Installation
@@ -29,7 +30,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  apiarist: ^1.0.6
+  apiarist: ^1.0.7
 ```
 
 Then run:
@@ -81,9 +82,9 @@ String handleResponse = response.when(
 );
 ```
 
-### Composite Responses
+### Composite Responses (Parallel API Calls)
 
-Combine multiple API responses with intelligent error prioritization:
+Combine multiple **parallel** API responses with intelligent error prioritization:
 
 ```dart
 ApiResponse<CombinedData> combinedResponse = ApiResponse.composite([
@@ -94,11 +95,36 @@ ApiResponse<CombinedData> combinedResponse = ApiResponse.composite([
   // All responses are successful, combine the data
   return CombinedData(
     user: responses[0],
-    settings: responses[1], 
+    settings: responses[1],
     notifications: responses[2],
   );
 });
 ```
+
+Use this when you need to wait for multiple independent API calls to complete before displaying data.
+
+### Chaining Responses (Sequential API Calls)
+
+Chain **sequential** API calls where each call depends on the previous response:
+
+```dart
+// Fluent chaining syntax
+final result = await api
+  .getUser(userId)
+  .chain((user) => api.getProfile(user.profileId))
+  .chain((profile) => api.getSettings(profile.settingsId))
+  .convertData((settings) => settings.getDetails());
+
+// Handle the final result
+result.when(
+  data: (details) => print("Success: $details"),
+  loading: () => print("Loading..."),
+  error: (error) => print("API error: ${error.statusCode}"),
+  failure: (failure) => print("Failed: ${failure.error}"),
+);
+```
+
+The `chain()` method automatically propagates errors and failures through the chain. If any call fails, subsequent calls are skipped and the error/failure is returned.
 
 ### Data Conversion
 
@@ -193,7 +219,8 @@ The main class for handling API responses.
 
 - `when<R>({...})` - Pattern match on the response state with optional specific status code handlers
 - `convertData<R>(R Function(T) converter)` - Convert the response data to a different type
-- `static composite<T>(List<ApiResponse> responses, T Function(List) combiner)` - Combine multiple responses
+- `chain<R>(Future<ApiResponse<R>> Function(T) fn)` - Chain sequential API calls with automatic error propagation
+- `static composite<T>(List<ApiResponse> responses, T Function(List) combiner)` - Combine multiple parallel responses
 
 ### ApiError
 

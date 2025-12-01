@@ -217,6 +217,33 @@ abstract class ApiResponse<T> {
     );
   }
 
+  /// Chain this response with another API call that depends on the data.
+  ///
+  /// If this response has data, the function [fn] is called with that data
+  /// and its result is returned. If this response is loading, error, or failure,
+  /// those states are propagated without calling [fn].
+  ///
+  /// This enables sequential API calls where each call depends on the result
+  /// of the previous one.
+  ///
+  /// Example:
+  /// ```dart
+  /// ApiResponse<User> userResp = await api.getUser(userId);
+  /// ApiResponse<Profile> profileResp = await userResp.chain(
+  ///   (user) => api.getProfile(user.profileId)
+  /// );
+  /// ```
+  Future<ApiResponse<R>> chain<R>(
+    Future<ApiResponse<R>> Function(T data) fn,
+  ) async {
+    return when(
+      data: (data) async => await fn(data),
+      loading: () async => ApiResponse.loading(),
+      error: (error) async => ApiResponse.error(error),
+      failure: (failure) async => ApiResponse.failure(failure),
+    );
+  }
+
   static bool _hasError(element) {
     if (element is AsyncValue) return element.error != null;
     if (element is ApiResponse) return element.hasError;

@@ -1,6 +1,7 @@
 import 'package:apiarist/src/api_error.dart';
 import 'package:apiarist/src/api_failure.dart';
 import 'package:apiarist/src/api_response.dart';
+import 'package:apiarist/src/future_api_response_extension.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod/riverpod.dart';
 import 'package:test/test.dart';
@@ -252,6 +253,185 @@ void main() {
       expect(result.hasFailure, isTrue);
       expect(result.failure, isA<ApiFailure>());
       expect(result.failure!.error.toString(), Exception("Async error").toString());
+    });
+  });
+
+  group('ApiResponse.chain', () {
+    test('chains successful responses', () async {
+      final response1 = const ApiResponse<int>.data(42);
+      final response2 = await response1.chain((value) async {
+        return ApiResponse<String>.data('Value: $value');
+      });
+
+      expect(response2.hasValue, isTrue);
+      expect(response2.value, equals('Value: 42'));
+      expect(response2.isLoading, isFalse);
+      expect(response2.hasError, isFalse);
+      expect(response2.hasFailure, isFalse);
+    });
+
+    test('propagates loading state without calling function', () async {
+      var functionCalled = false;
+      final response1 = const ApiResponse<int>.loading();
+      final response2 = await response1.chain((value) async {
+        functionCalled = true;
+        return ApiResponse<String>.data('Value: $value');
+      });
+
+      expect(functionCalled, isFalse);
+      expect(response2.isLoading, isTrue);
+      expect(response2.hasValue, isFalse);
+      expect(response2.hasError, isFalse);
+      expect(response2.hasFailure, isFalse);
+    });
+
+    test('propagates error state without calling function', () async {
+      var functionCalled = false;
+      final error = ApiError(
+        http.Response('Error', 404),
+        uri: Uri.parse('https://example.com'),
+      );
+      final response1 = ApiResponse<int>.error(error);
+      final response2 = await response1.chain((value) async {
+        functionCalled = true;
+        return ApiResponse<String>.data('Value: $value');
+      });
+
+      expect(functionCalled, isFalse);
+      expect(response2.isLoading, isFalse);
+      expect(response2.hasValue, isFalse);
+      expect(response2.hasError, isTrue);
+      expect(response2.hasFailure, isFalse);
+      expect(response2.error, equals(error));
+    });
+
+    test('propagates failure state without calling function', () async {
+      var functionCalled = false;
+      final failure = ApiFailure(
+        Exception('Network error'),
+        StackTrace.current,
+      );
+      final response1 = ApiResponse<int>.failure(failure);
+      final response2 = await response1.chain((value) async {
+        functionCalled = true;
+        return ApiResponse<String>.data('Value: $value');
+      });
+
+      expect(functionCalled, isFalse);
+      expect(response2.isLoading, isFalse);
+      expect(response2.hasValue, isFalse);
+      expect(response2.hasError, isFalse);
+      expect(response2.hasFailure, isTrue);
+      expect(response2.failure, equals(failure));
+    });
+
+    test('chains multiple calls successfully', () async {
+      final response1 = const ApiResponse<int>.data(10);
+      final response2 = await response1.chain((value) async {
+        return ApiResponse<int>.data(value * 2);
+      });
+      final response3 = await response2.chain((value) async {
+        return ApiResponse<String>.data('Result: $value');
+      });
+
+      expect(response3.hasValue, isTrue);
+      expect(response3.value, equals('Result: 20'));
+    });
+
+    test('stops chain on first error', () async {
+      var secondCallMade = false;
+      var thirdCallMade = false;
+
+      final error = ApiError(
+        http.Response('Error', 500),
+        uri: Uri.parse('https://example.com'),
+      );
+
+      final response1 = const ApiResponse<int>.data(10);
+      final response2 = await response1.chain((value) async {
+        secondCallMade = true;
+        return ApiResponse<int>.error(error);
+      });
+      final response3 = await response2.chain((value) async {
+        thirdCallMade = true;
+        return ApiResponse<String>.data('Should not happen');
+      });
+
+      expect(secondCallMade, isTrue);
+      expect(thirdCallMade, isFalse);
+      expect(response3.hasError, isTrue);
+      expect(response3.error, equals(error));
+    });
+
+    test('stops chain on first failure', () async {
+      var secondCallMade = false;
+      var thirdCallMade = false;
+
+      final failure = ApiFailure(
+        Exception('Network error'),
+        StackTrace.current,
+      );
+
+      final response1 = const ApiResponse<int>.data(10);
+      final response2 = await response1.chain((value) async {
+        secondCallMade = true;
+        return ApiResponse<int>.failure(failure);
+      });
+      final response3 = await response2.chain((value) async {
+        thirdCallMade = true;
+        return ApiResponse<String>.data('Should not happen');
+      });
+
+      expect(secondCallMade, isTrue);
+      expect(thirdCallMade, isFalse);
+      expect(response3.hasFailure, isTrue);
+      expect(response3.failure, equals(failure));
+    });
+  });
+
+  group('FutureApiResponseExtension.chain', () {
+    test('enables fluent chaining without intermediate variables', () async {
+      Future<ApiResponse<int>> getInitialValue() async {
+        return const ApiResponse<int>.data(5);
+      }
+
+      final result = await getInitialValue()
+          .chain((value) async => ApiResponse<int>.data(value * 2))
+          .chain((value) async => ApiResponse<String>.data('Result: $value'));
+
+      expect(result.hasValue, isTrue);
+      expect(result.value, equals('Result: 10'));
+    });
+
+    test('propagates error through fluent chain', () async {
+      final error = ApiError(
+        http.Response('Error', 400),
+        uri: Uri.parse('https://example.com'),
+      );
+
+      Future<ApiResponse<int>> getInitialValue() async {
+        return ApiResponse<int>.error(error);
+      }
+
+      final result = await getInitialValue()
+          .chain((value) async => ApiResponse<int>.data(value * 2))
+          .chain((value) async => ApiResponse<String>.data('Result: $value'));
+
+      expect(result.hasError, isTrue);
+      expect(result.error, equals(error));
+    });
+
+    test('combines chain and convertData fluently', () async {
+      Future<ApiResponse<int>> getInitialValue() async {
+        return const ApiResponse<int>.data(100);
+      }
+
+      final result = await getInitialValue()
+          .chain((value) async => ApiResponse<int>.data(value + 50))
+          .convertData((value) => 'Total: $value');
+
+      expect(result.hasValue, isTrue);
+      expect(result.value, equals('Total: 150'));
     });
   });
 }
